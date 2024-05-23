@@ -3,7 +3,33 @@ Why didn’t anyone think of simply reading keys from files and making variables
 **  How it works
 [[./resources/schema.jpg]]
 **  How to use
-#+begin_src clojure
-(require 'envjure)
+***  ENV file
+.ENV file in ur project working dir
+#+begin_src dotenv
+TEST=1
+TEST_2=2
+TEST-3=3
+#+end_src
+***  Clojure
 
+#+begin_src clojure
+(ns demo)
+(require
+ '[clojure.java.io :as io]
+ '[envjure :as env])
+
+;; simple read config to hash-map
+(def env* (-> (io/resource ".ENV") (io/slurp) (env/read-env!)))
+;; => {:test "1" :test-2 "2" :test-3 "3"}
+
+;; data coerce by spec {key fn}
+(def env-coerced (env/coerce {:test :int :test-2 keyword} env*))
+;; => {:test 1 :test-2 :2 :test-3 "3"}
+
+;; macro that generates vars for current namespace
+(env/gen! env-coerced)
+;; => #'demo/config ;; => {:test 1 :test-2 :2 :test-3 "3"}
+;; => #'demo/test ;; => 1
+;; => #'demo/test-2 ;; => :2
+;; => #'demo/test-3 ;; => "3"
 #+end_src
