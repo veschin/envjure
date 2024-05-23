@@ -2,14 +2,9 @@
   (:gen-class)
   (:require [clojure.string :as str]))
 
-;; TODO: read env
 ;; TODO: read yaml
 ;; TODO: read json
-;; TODO: validate by schema
 ;; TODO: logs
-;; TODO: generate vars
-;; TODO: generate config
-;; TODO: reload config fn
 (declare normalize read-env! read-json! read-yaml!)
 
 (defn normalize [key*]
@@ -22,13 +17,26 @@
          (keyword k))))
 
 (defn coerce [schema config]
-  )
+  (let [aliases {:int #(Integer/parseInt %)}]
+    (into {}
+     (for [[key val] config
+           :let [fn- (or (get schema key) identity)]]
+       (try
+         {key ((get aliases fn- fn-) val)}
+         ;; TODO: log exception
+         (catch Exception _))))))
 
 (defn read-env! [env-str]
   (->> (str/split-lines env-str)
        (mapv (comp (fn [[key val]] (when (every? not-empty [key val]) {(normalize key) val}))
                    #(str/split % #"\=")))
        (into {})))
+
+(defmacro gen! [config*]
+  `(do
+     ~(list 'def 'config- config*)
+     ~@(for [[key# val#] config*]
+         (list 'def (-> key# name symbol) val#))))
 
 (defn config []
   (read-env!)
