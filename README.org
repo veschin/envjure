@@ -2,6 +2,17 @@
 Why didn’t anyone think of simply reading keys from files and making variables and a single config from them?
 **  How it works
 [[./resources/schema.jpg]]
+**  Features
+- read ~json~
+- read ~yaml~
+- read ~edn~ <3
+- read ~.env~
+- keys always will be ~kebab-case~
+- can ~gen! vars~ to ur namespace
+- ~coerce~ by simple ~schema of fn's~
+- ~logs!~
+- well ~tested~ (i believe)
+- no ~defonce/lazy/memoize~
 **  How to use
 ***  ENV file
 .ENV file in ur project working dir
