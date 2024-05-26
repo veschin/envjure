@@ -1,11 +1,10 @@
 (ns envjure
   (:gen-class)
-  (:require [clojure.string :as str]))
-
-;; TODO: read yaml
-;; TODO: read json
-;; TODO: logs
-(declare normalize read-env! read-json! read-yaml!)
+  (:require
+   [cheshire.core :as json]
+   [clojure.string :as str]
+   [clojure.tools.logging :as log]
+   [yaml.core :as yaml]))
 
 (defn normalize [key*]
   (let [camel-case-regex #"(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])"]
@@ -23,28 +22,39 @@
            :let [fn- (or (get schema key) identity)]]
        (try
          {key ((get aliases fn- fn-) val)}
-         ;; TODO: log exception
-         (catch Exception _))))))
+         (catch Exception _
+           (log/error (format "Key = %s with val = %s can't be coerced by = %s" key val fn-))
+           :error))))))
+
+(defmacro try-read! [type* & body]
+  `(try
+     (log/info (format "Reading config of type = %s" ~type*) )
+     ~@body
+     (catch Exception e#
+       (log/error (format "Error while reading config of type = %s\n %s" ~type* e#))
+       :error)))
 
 (defn read-env! [env-str]
-  (->> (str/split-lines env-str)
-       (mapv (comp (fn [[key val]] (when (every? not-empty [key val]) {(normalize key) val}))
-                   #(str/split % #"\=")))
-       (into {})))
+  (try-read! :env
+    (->> (str/split-lines env-str)
+         (mapv (comp (fn [[key val]] (when (every? not-empty [key val]) {(normalize key) val}))
+                     #(str/split % #"\=")))
+         (into {}))))
+
+(defn read-json! [json-str]
+  (try-read! :json
+    (-> json-str
+        (json/parse-string)
+        (update-keys normalize))))
+
+(defn read-yaml! [yaml-str]
+  (try-read! :yaml
+    (-> yaml-str
+        (yaml/parse-string :keywords false)
+        (update-keys normalize))))
 
 (defmacro gen! [config*]
   `(do
      ~(list 'def 'config- config*)
      ~@(for [[key# val#] config*]
          (list 'def (-> key# name symbol) val#))))
-
-(defn config []
-  (read-env!)
-  (read-json!)
-  (read-yaml!)
-  )
-
-(defn -main
-  ""
-  [& args]
-  )
