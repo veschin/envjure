@@ -53,6 +53,12 @@
         (yaml/parse-string :keywords false)
         (update-keys normalize))))
 
+(defn read-edn! [edn-str]
+  (try-read! :edn
+    (-> edn-str
+        (read-string)
+        (update-keys (comp normalize name)))))
+
 (defmacro gen! [config*]
   `(do
      ~(list 'def 'config- config*)

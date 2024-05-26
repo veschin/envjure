@@ -38,24 +38,33 @@
   (t/is (= (sut/read-env! "") {})))
 
 (t/deftest json-test
-  (def json-config (json/generate-string {:Test "1"
+  (def json-config (json/generate-string {:Test     "1"
                                           :testTest "2"
                                           :test_vec [1 2 3 4]}))
   (t/is (= (sut/read-json! json-config)
-           {:test "1"
+           {:test      "1"
             :test-test "2"
-            :test-vec [1 2 3 4]}))
+            :test-vec  [1 2 3 4]}))
   (t/is (= (sut/read-json! "test") :error)))
 
 (t/deftest yaml-test
-  (def yaml-config (yaml/generate-string {:Test "1"
+  (def yaml-config (yaml/generate-string {:Test     "1"
                                           :testTest "2"
                                           :test_vec [1 2 3 4]}))
   (t/is (= (sut/read-yaml! yaml-config)
-           {:test "1"
+           {:test      "1"
             :test-test "2"
-            :test-vec [1 2 3 4]}))
+            :test-vec  [1 2 3 4]}))
   (t/is (= (sut/read-yaml! "test") :error)))
+
+(t/deftest edn-test
+  (t/is (= (sut/read-edn! (str {:Test     "1"
+                                :testTest 2
+                                :test_vec [1 2 3 4]}))
+           {:test      "1"
+            :test-test 2
+            :test-vec  [1 2 3 4]}))
+  (t/is (= (sut/read-edn! "test") :error)))
 
 (t/deftest gen-test
   (sut/gen! {:test "t"

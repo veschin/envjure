@@ -11,7 +11,6 @@ TEST_2=2
 TEST-3=3
 #+end_src
 ***  Clojure
-
 #+begin_src clojure
 (ns demo)
 (require
@@ -33,12 +32,3 @@ TEST-3=3
 ;; => #'demo/test-2 ;; => :2
 ;; => #'demo/test-3 ;; => "3"
 #+end_src
-**  Goals
-- [X]  ENV
-- [ ]  JSON
-- [ ]  YAML
-- [ ]  EDN
-- [ ]  Logs
-- [X]  Coerce
-- [X]  String -> Kebab-case keyword
-- [ ]  Simple bootstrap fn
